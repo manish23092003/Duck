@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<meta name="description" content="QUACK. Click the duck. A beautifully pointless interactive 3D rubber duck experience." />
+<meta name="theme-color" content="#0a0a0b" />
+<title>QUACK.</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦆</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0b;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #root {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #root canvas {
+    display: block;
+    touch-action: none;
+  }
+
+  .ui-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 34px 20px;
+    z-index: 10;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .brand {
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #f5f5f5;
+    margin: 0;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.5);
+  }
+
+  .subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+    margin: 0;
+  }
+
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 22px;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+  }
+
+  .counter-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.34);
+  }
+
+  .counter-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f5f5f5;
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.15s ease;
+  }
+  .counter-value.pop {
+    animation: counterPop 0.3s ease;
+  }
+  @keyframes counterPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.28); color: #ffd21e; }
+    100% { transform: scale(1); }
+  }
+
+  .microcopy {
+    font-size: 11px;
+    color: rgba(255,255,255,0.24);
+    letter-spacing: 0.01em;
+    font-style: italic;
+  }
+
+  .quack-pop {
+    position: fixed;
+    z-index: 30;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #ffd21e;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 18px rgba(255,210,30,0.25);
+    pointer-events: none;
+    animation: quackFloat 0.95s ease-out forwards;
+    white-space: nowrap;
+  }
+  @keyframes quackFloat {
+    0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5) rotate(-4deg); }
+    18% { opacity: 1; transform: translate(-50%, -70%) scale(1.12) rotate(3deg); }
+    45% { opacity: 1; transform: translate(-50%, -110%) scale(1) rotate(-2deg); }
+    100% { opacity: 0; transform: translate(-50%, -170%) scale(0.92) rotate(0deg); }
+  }
+
+  .click-ripple {
+    position: fixed;
+    z-index: 25;
+    width: 14px;
+    height: 14px;
+    left: 0; top: 0;
+    transform: translate(-50%, -50%);
+    border: 1.5px solid rgba(255, 210, 30, 0.55);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: rippleGrow 0.7s ease-out forwards;
+  }
+  @keyframes rippleGrow {
+    0% { width: 14px; height: 14px; opacity: 0.8; border-width: 2px; }
+    100% { width: 130px; height: 130px; opacity: 0; border-width: 0.5px; }
+  }
+
+  .sound-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 6px 14px;
+    color: rgba(255, 255, 255, 0.45);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+  .sound-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .sound-toggle:active { transform: scale(0.95); }
+
+  @media (max-width: 640px) {
+    .ui-layer { padding: 22px 16px; }
+    .brand { font-size: 30px; }
+    .counter { padding: 8px 18px; }
+    .sound-toggle { top: 10px; right: 10px; padding: 5px 10px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <button class="sound-toggle" id="sound-toggle" aria-label="Toggle quack sound">
+    <span id="sound-icon">🔊</span>
+    <span id="sound-label">Sound ON</span>
+  </button>
+
+  <div class="ui-layer">
+    <div class="header">
+      <p class="brand">QUACK.</p>
+      <p class="subtitle">Click the duck.</p>
+    </div>
+
+    <div class="footer">
+      <div class="counter">
+        <span class="counter-label">Quacks</span>
+        <span class="counter-value" id="quack-count">0</span>
+      </div>
+      <p class="microcopy">Absolutely no reason for this website to exist.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/index.js"></script>
+</body>
+</html>
